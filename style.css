@@ -1,0 +1,22 @@
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+canvas {
+  width: 100%;
+}
