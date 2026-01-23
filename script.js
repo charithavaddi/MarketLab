@@ -13,6 +13,17 @@ let stocks = [
   { name: "GOOG", price: 2800 }
 ];
 
+function selectStock(name) {
+  selectedStock = name;
+
+  // reset chart
+  priceChart.data.labels = [];
+  priceChart.data.datasets[0].data = [];
+
+  priceChart.update();
+}
+
+
 // ================================
 // CHART INITIALIZATION
 // ================================
@@ -45,9 +56,15 @@ function renderMarket() {
   let html = "";
 
   stocks.forEach(s => {
+    let style = s.name === selectedStock 
+      ? "color:lime;font-weight:bold"
+      : "";
+
     html += `
-      <p>
-        ${s.name}: $${s.price.toFixed(2)}
+      <p style="${style}">
+        <span onclick="selectStock('${s.name}')" style="cursor:pointer">
+          ${s.name}: $${s.price.toFixed(2)}
+        </span>
         <button onclick="buy('${s.name}')">Buy</button>
         <button onclick="sell('${s.name}')">Sell</button>
       </p>
@@ -56,6 +73,7 @@ function renderMarket() {
 
   document.getElementById("market").innerHTML = html;
 }
+
 
 
 renderMarket();
@@ -80,7 +98,13 @@ function updatePrices() {
 
   renderMarket();
   priceChart.data.labels.push(new Date().toLocaleTimeString());
-  priceChart.data.datasets[0].data.push(stocks[0].price);
+  let stock = stocks.find(s => s.name === selectedStock);
+
+  priceChart.data.labels.push(new Date().toLocaleTimeString());
+  priceChart.data.datasets[0].data.push(stock.price);
+  priceChart.data.datasets[0].label = stock.name + " Price";
+  priceChart.update();
+
   priceChart.update();
 }
 
