@@ -43,16 +43,17 @@ let priceChart = new Chart(ctx, {
 // Displays current stock prices on dashboard
 function renderMarket() {
   let html = "";
+
   stocks.forEach(s => {
     html += `
       <p>
         ${s.name}: $${s.price.toFixed(2)}
-        <button onclick="buy(stocks.find(x => x.name === '${s.name}'))">
-          Buy
-        </button>
+        <button onclick="buy('${s.name}')">Buy</button>
+        <button onclick="sell('${s.name}')">Sell</button>
       </p>
     `;
   });
+
   document.getElementById("market").innerHTML = html;
 }
 
@@ -95,12 +96,40 @@ let cash = 100000;
 let holdings = {};
 
 // Buys one share of specified stock if enough cash is available
-function buy(stock) {
+function buy(stockName) {
+  let stock = stocks.find(s => s.name === stockName);
+
   if (cash >= stock.price) {
     cash -= stock.price;
-    holdings[stock.name] = (holdings[stock.name] || 0) + 1;
-    renderPortfolio();   // update UI
+    holdings[stockName] = (holdings[stockName] || 0) + 1;
+    renderPortfolio();
   }
+}
+
+
+// Sells one share of specified stock if owned
+function sell(stockName) {
+  let stock = stocks.find(s => s.name === stockName);
+
+  if (holdings[stockName] > 0) {
+    holdings[stockName]--;
+    cash += stock.price;
+
+    if (holdings[stockName] === 0) {
+      delete holdings[stockName];
+    }
+
+    renderPortfolio();
+  }
+}
+
+// Calculates total net worth (cash + stock value)
+function netWorth() {
+  let total = cash;
+  stocks.forEach(s => {
+    total += (holdings[s.name] || 0) * s.price;
+  });
+  return total;
 }
 
 
@@ -108,6 +137,8 @@ function buy(stock) {
 function renderPortfolio() {
   let html = `<h3>Portfolio</h3>`;
   html += `<p>Cash: $${cash.toFixed(2)}</p>`;
+  html += `<p>Net Worth: $${netWorth().toFixed(2)}</p>`;
+
 
   for (let stock in holdings) {
     html += `<p>${stock}: ${holdings[stock]} shares</p>`;
