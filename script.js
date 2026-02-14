@@ -13,6 +13,10 @@ let stocks = [
   { name: "GOOG", price: 2800 }
 ];
 
+// Store historical prices for each stock
+let priceHistory = {};
+stocks.forEach(s => priceHistory[s.name] = []);
+
 function selectStock(name) {
   selectedStock = name;
 
@@ -87,17 +91,36 @@ renderMarket();
 let mu = 0.0005;
 let sigma = 0.01;
 
+// Box-Muller transform to generate standard normal variable
+function randomNormal() {
+  let u = 0, v = 0;
+  while(u === 0) u = Math.random();
+  while(v === 0) v = Math.random();
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+
 // Updates stock prices using Geometric Brownian Motion
 function updatePrices() {
   stocks.forEach(s => {
-    let Z = Math.random();
-    s.price *= Math.exp((mu - 0.5*sigma*sigma) + sigma*Z);
+    let Z = randomNormal();
+    let dt = 1/252; // 252 trading days
+    s.price *= Math.exp((mu - 0.5*sigma*sigma)*dt + sigma*Math.sqrt(dt)*Z);
+    priceHistory[s.name].push(s.price);
+    // 1% chance of sudden crash
+    if(Math.random() < 0.01){
+      s.price *= 0.85;
+    }
+
+    // keep only last 100 prices
+    if(priceHistory[s.name].length > 100){
+      priceHistory[s.name].shift();
+    }
   });
 
   //Update market display and chart
 
   renderMarket();
-  priceChart.data.labels.push(new Date().toLocaleTimeString());
   let stock = stocks.find(s => s.name === selectedStock);
 
   priceChart.data.labels.push(new Date().toLocaleTimeString());
@@ -105,7 +128,6 @@ function updatePrices() {
   priceChart.data.datasets[0].label = stock.name + " Price";
   priceChart.update();
 
-  priceChart.update();
 }
 
 //Run price update every second
@@ -162,17 +184,40 @@ function renderPortfolio() {
   let html = `<h3>Portfolio</h3>`;
   html += `<p>Cash: $${cash.toFixed(2)}</p>`;
   html += `<p>Net Worth: $${netWorth().toFixed(2)}</p>`;
+  
 
+  html += `<hr>`;
 
-  for (let stock in holdings) {
-    html += `<p>${stock}: ${holdings[stock]} shares</p>`;
-  }
+  stocks.forEach(s => {
+    let shares = holdings[s.name] || 0;
+    let vol = calculateVolatility(priceHistory[s.name]);
+
+    html += `
+      <div class="stock-row">
+        <strong>${s.name}</strong><br>
+        Shares: ${shares} <br>
+        Volatility: ${vol.toFixed(4)}
+      </div>
+    `;
+  });
 
   document.getElementById("portfolio").innerHTML = html;
 }
 renderPortfolio();
 
 
+// ================================
+// RISK METRICS
+// ================================
 
+function calculateVolatility(prices){
+  if(prices.length < 2) return 0;
+  let returns = [];
+  for(let i=1;i<prices.length;i++){
+    returns.push(Math.log(prices[i]/prices[i-1]));
+  }
 
-
+  let mean = returns.reduce((a,b)=>a+b,0)/returns.length;
+  let variance = returns.reduce((a,b)=>a+(b-mean)**2,0)/returns.length;
+  return Math.sqrt(variance)*Math.sqrt(252);
+}

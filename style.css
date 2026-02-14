@@ -20,3 +20,35 @@ div {
 canvas {
   width: 100%;
 }
+
+button {
+  background: #334155;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: lime;
+  color: black;
+  transform: scale(1.1);
+  transition: 0.2s;
+}
+
+#portfolio h3 {
+  margin-bottom: 10px;
+}
+
+.stock-row {
+  background: #334155;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+
+hr {
+  border: 1px solid #475569;
+  margin: 10px 0;
+}

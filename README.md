@@ -14,6 +14,11 @@ data visualization, and basic quantitative analysis using only frontend web tech
 - Portfolio tracking
 - Stochastic price modeling
 - Dark-mode financial dashboard UI
+- Volatility calculation for each stock
+- Historical price tracking
+- Random market shock simulation
+- Improved portfolio structuring
+
 
 ## Technologies Used
 - HTML – User interface structure  
@@ -24,12 +29,13 @@ data visualization, and basic quantitative analysis using only frontend web tech
 ## Mathematical Model
 Stock prices are simulated using a simplified Geometric Brownian Motion model:
 
-S(t+1) = S(t) × exp((μ − ½σ²) + σZ)
+S(t+1) = S(t) × exp((μ − ½σ²)Δt + σ√Δt Z)
 
 Where:
 - μ = expected return (drift)
 - σ = volatility
-- Z = random variable
+- Δt = time step (1/252 trading year)
+- Z = standard normal random variable (generated using Box-Muller transform)
 
 ## How to Run
 1. Open the folder.
@@ -42,6 +48,7 @@ No backend or installation required.
 - Prices are simulated, not real market data.
 - No order book or liquidity modeling.
 - Simplified risk metrics.
+- Does not include advanced portfolio optimization or backtesting.
 
 ## Future Improvements
 - Candlestick charts
