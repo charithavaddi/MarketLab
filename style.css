@@ -41,6 +41,45 @@ button:hover {
   margin-bottom: 10px;
 }
 
+#sidePortfolio {
+  margin-top: 15px;
+}
+#sidePanel {
+  position: fixed;
+  right: -400px;
+  top: 0;
+  width: 350px;
+  height: 100vh;
+  background: #111;
+  padding: 20px;
+  transition: 0.3s;
+  overflow-y: auto;
+  margin: 0; 
+  box-sizing: border-box; 
+  z-index: 9999; 
+}
+
+#sidePanel h2 {
+  margin-top: 0; 
+  padding-top: 5px; 
+  color: white;
+}
+
+#topBar {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  gap: 30px; 
+  padding: 15px;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  position: sticky;
+  top: 0;
+}
+
 .stock-row {
   background: #334155;
   padding: 10px;
@@ -51,4 +90,26 @@ button:hover {
 hr {
   border: 1px solid #475569;
   margin: 10px 0;
+}
+#sidePanel {
+  position: fixed;
+  right: -400px;
+  top: 0;
+  width: 350px;
+  height: 100%;
+  background: #111;
+  padding: 20px;
+  transition: 0.3s;
+  overflow-y: auto;
+}
+
+#sidePanel.open {
+  right: 0;
+}
+
+#openPanelBtn {
+  position: fixed;
+  right: 10px;
+  top: 10px;
+  font-size: 20px;
 }

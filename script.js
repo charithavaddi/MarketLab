@@ -13,6 +13,11 @@ let stocks = [
   { name: "GOOG", price: 2800 }
 ];
 
+//Portfolio Labels
+
+let portfolioHistory = [];
+let portfolioLabels = [];
+
 // Store historical prices for each stock
 let priceHistory = {};
 stocks.forEach(s => priceHistory[s.name] = []);
@@ -48,6 +53,29 @@ let priceChart = new Chart(ctx, {
       fill: false,
       tension: 0.3
     }]
+  }
+});
+
+//Context to draw portfolio graph
+let portfolioCtx = document.getElementById("portfolioChart").getContext("2d");
+
+//Portfolio line graph
+let portfolioChart = new Chart(portfolioCtx, {
+  type: "line",
+  data: {
+    labels: portfolioLabels,
+    datasets: [{
+      label: "Net Worth",
+      data: portfolioHistory,
+      borderColor: "cyan",
+      tension: 0.3
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { display: false }
+    }
   }
 });
 
@@ -128,6 +156,12 @@ function updatePrices() {
   priceChart.data.datasets[0].label = stock.name + " Price";
   priceChart.update();
 
+  let currentNetWorth = netWorth();
+  portfolioHistory.push(currentNetWorth);
+  portfolioLabels.push(new Date().toLocaleTimeString());
+  portfolioChart.update();
+  calculateRiskMetrics();
+
 }
 
 //Run price update every second
@@ -201,7 +235,16 @@ function renderPortfolio() {
     `;
   });
 
-  document.getElementById("portfolio").innerHTML = html;
+  let side = document.getElementById("sidePortfolio");
+  if (side) {
+    side.innerHTML = html;
+  }
+  document.getElementById("topCash").innerText = cash.toFixed(2);
+
+  let totalShares = Object.values(holdings).reduce((a,b)=>a+b,0);
+  document.getElementById("topShares").innerText = totalShares;
+
+  document.getElementById("topNet").innerText = netWorth().toFixed(2);
 }
 renderPortfolio();
 
@@ -220,4 +263,61 @@ function calculateVolatility(prices){
   let mean = returns.reduce((a,b)=>a+b,0)/returns.length;
   let variance = returns.reduce((a,b)=>a+(b-mean)**2,0)/returns.length;
   return Math.sqrt(variance)*Math.sqrt(252);
+}
+
+// Controls opening and closing of the side dashboard panel
+function togglePanel() {
+  document.getElementById("sidePanel").classList.toggle("open");
+}
+
+// ================================
+// PORTFOLIO RISK METRICS
+// ================================
+
+// Calculates return, Sharpe ratio, and max drawdown
+function calculateRiskMetrics() {
+
+  if (portfolioHistory.length < 2) return;
+
+  let returns = [];
+
+  // Step 1: compute returns
+  for (let i = 1; i < portfolioHistory.length; i++) {
+    let r = (portfolioHistory[i] - portfolioHistory[i - 1]) / portfolioHistory[i - 1];
+    returns.push(r);
+  }
+
+  // Step 2: average return
+  let avg = returns.reduce((a, b) => a + b, 0) / returns.length;
+
+  // Step 3: standard deviation
+  let variance = returns.reduce((a, b) => a + (b - avg) ** 2, 0) / returns.length;
+  let std = Math.sqrt(variance);
+
+  // Step 4: Sharpe Ratio (annualized)
+  let sharpe = std === 0 ? 0 : (avg / std) * Math.sqrt(252);
+
+  // Step 5: Max Drawdown
+  let peak = portfolioHistory[0];
+  let maxDrawdown = 0;
+
+  for (let value of portfolioHistory) {
+    if (value > peak) peak = value;
+
+    let drawdown = (value - peak) / peak;
+
+    if (drawdown < maxDrawdown) {
+      maxDrawdown = drawdown;
+    }
+  }
+
+  // Step 6: Total Return
+  let initial = portfolioHistory[0];
+  let current = portfolioHistory[portfolioHistory.length - 1];
+  let totalReturn = ((current - initial) / initial) * 100;
+
+  // Step 7: Update UI
+  document.getElementById("returnMetric").innerText = totalReturn.toFixed(2) + "%";
+  document.getElementById("sharpeMetric").innerText = sharpe.toFixed(2);
+  document.getElementById("drawdownMetric").innerText = (maxDrawdown * 100).toFixed(2) + "%";
 }

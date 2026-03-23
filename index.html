@@ -11,6 +11,11 @@
   <header>
     <h1>MarketLab</h1>
     <p>Quant Strategy Playground</p>
+    <div id="topBar">
+      <span>Cash: $<span id="topCash">0</span></span>
+      <span>Shares: <span id="topShares">0</span></span>
+      <span><strong>Net Worth: $<span id="topNet">0</span></strong></span>
+    </div>
   </header>
 
   <main>
@@ -18,9 +23,24 @@
     <div id="chart">
     <canvas id="priceChart"></canvas>
     </div>
-    <div id="portfolio"></div>
+    <div class="card">
+    <h3>Portfolio Performance</h3>
+    <canvas id="portfolioChart"></canvas>
+    </div>
   </main>
 
   <script src="script.js"></script>
+  <div id="sidePanel">
+    <h2>Portfolio Dashboard</h2>
+    <canvas id="portfolioChart"></canvas>
+    <div id="sidePortfolio"></div>
+    <div id="riskMetrics">
+      <p>Return: <span id="returnMetric">0%</span></p>
+      <p>Sharpe: <span id="sharpeMetric">0</span></p>
+      <p>Drawdown: <span id="drawdownMetric">0%</span></p>
+    </div>
+  </div>
+
+  <button id="openPanelBtn" onclick="togglePanel()">☰</button>
 </body>
 </html>
