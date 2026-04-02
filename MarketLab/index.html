@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MarketLab</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #070b18;
+  --surface: #0c1225;
+  --card:    #101828;
+  --border:  #1a2d4a;
+  --accent:  #4f8ef7;
+  --cyan:    #00d4ff;
+  --green:   #05d98a;
+  --text:    #e4edf8;
+  --sub:     #7b93b8;
+  --muted:   #3a5070;
+  --mono:    'Space Mono', monospace;
+  --sans:    'Plus Jakarta Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── BACKGROUND ── */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 15% 10%, rgba(79,142,247,0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 45% at 85% 85%, rgba(5,217,138,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 55% 50%, rgba(0,212,255,0.05) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Animated grid */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  pointer-events: none;
+  animation: gridPulse 8s ease-in-out infinite;
+}
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+/* Floating orbs */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: drift 18s ease-in-out infinite;
+}
+.orb-1 {
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(79,142,247,0.12) 0%, transparent 70%);
+  top: -10%; left: -8%;
+  animation-duration: 20s;
+}
+.orb-2 {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(5,217,138,0.08) 0%, transparent 70%);
+  bottom: -8%; right: -6%;
+  animation-duration: 16s; animation-delay: -6s;
+}
+.orb-3 {
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(0,212,255,0.07) 0%, transparent 70%);
+  top: 50%; right: 20%;
+  animation-duration: 24s; animation-delay: -12s;
+}
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0); }
+  33%       { transform: translate(30px, -25px); }
+  66%       { transform: translate(-20px, 20px); }
+}
+
+/* Ticker strip */
+.ticker-strip {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 32px;
+  background: rgba(12,18,37,0.9);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+}
+.ticker-inner {
+  display: flex;
+  gap: 48px;
+  white-space: nowrap;
+  animation: ticker 30s linear infinite;
+}
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.tick-item {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--sub);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tick-item .sym { color: var(--text); font-weight: 700; }
+.tick-item .up  { color: var(--green); }
+.tick-item .dn  { color: #f0506e; }
+
+/* Bottom strip */
+.status-strip {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 28px;
+  background: rgba(12,18,37,0.85);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 10;
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  display: inline-block;
+  margin-right: 7px;
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+.status-text {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--muted);
+}
+
+/* ── MAIN CONTENT ── */
+.center {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0;
+  animation: riseIn 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(79,142,247,0.1);
+  border: 1px solid rgba(79,142,247,0.25);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--accent);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  animation: riseIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+.badge-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 6px var(--cyan);
+  animation: blink 1.8s ease-in-out infinite;
+}
+
+/* Logo */
+.logo {
+  font-family: var(--mono);
+  font-size: clamp(3.2rem, 9vw, 6.5rem);
+  font-weight: 700;
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: 22px;
+  animation: riseIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  position: relative;
+}
+.logo-market {
+  color: var(--text);
+}
+.logo-lab {
+  color: var(--cyan);
+  text-shadow: 0 0 40px rgba(0,212,255,0.4), 0 0 80px rgba(0,212,255,0.15);
+  position: relative;
+}
+.logo-lab::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  border-radius: 2px;
+}
+
+/* Tagline */
+.tagline {
+  font-size: 0.78rem;
+  color: var(--sub);
+  font-weight: 400;
+  letter-spacing: 0.4px;
+  max-width: 280px;
+  line-height: 1.55;
+  margin-top: 18px;
+  margin-bottom: 44px;
+  animation: riseIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+}
+.tagline span {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* CTA Button */
+.cta-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 36px;
+  background: linear-gradient(135deg, rgba(79,142,247,0.2) 0%, rgba(0,212,255,0.1) 100%);
+  border: 1px solid rgba(79,142,247,0.5);
+  border-radius: 14px;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: riseIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+  overflow: hidden;
+}
+.cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(79,142,247,0.3) 0%, rgba(0,212,255,0.2) 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: inherit;
+}
+.cta-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -60%;
+  width: 40%; height: 200%;
+  background: rgba(255,255,255,0.06);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+.cta-btn:hover::before { opacity: 1; }
+.cta-btn:hover::after  { left: 120%; }
+.cta-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(79,142,247,0.25), 0 0 0 1px rgba(79,142,247,0.4);
+  border-color: rgba(79,142,247,0.8);
+}
+.cta-btn:active { transform: translateY(-1px); }
+
+.cta-icon {
+  width: 22px; height: 22px;
+  background: rgba(79,142,247,0.2);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  transition: transform 0.3s;
+}
+.cta-btn:hover .cta-icon { transform: translateX(3px); }
+
+/* Decorative mini stats below button */
+.mini-stats {
+  display: flex;
+  gap: 28px;
+  margin-top: 44px;
+  animation: riseIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.65s both;
+}
+.mini-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.ms-val {
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.ms-val.c { color: var(--cyan); }
+.ms-val.g { color: var(--green); }
+.ms-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+}
+.divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+  margin: 4px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Top ticker -->
+<div class="ticker-strip">
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
+
+<!-- Bottom status bar -->
+<div class="status-strip">
+  <span class="status-text"><span class="status-dot"></span>MARKET SIMULATION READY</span>
+  <span class="status-text">v1.0.0 &nbsp;·&nbsp; MARKETLAB</span>
+</div>
+
+<!-- Main content -->
+<div class="center">
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Quant Strategy Playground
+  </div>
+
+  <div class="logo">
+    <span class="logo-market">Market</span><span class="logo-lab">Lab</span>
+  </div>
+
+  <p class="tagline">
+    Simulate, analyze, and <span>master</span> the market — without risking a dollar.
+  </p>
+
+  <a href="market.html" class="cta-btn">
+    <span class="cta-icon">→</span>
+    Go to Dashboard
+  </a>
+
+  <div class="mini-stats">
+    <div class="mini-stat">
+      <span class="ms-val c">12</span>
+      <span class="ms-label">Live Tickers</span>
+    </div>
+    <div class="divider"></div>
+    <div class="mini-stat">
+      <span class="ms-val g">$100K</span>
+      <span class="ms-label">Starting Cash</span>
+    </div>
+    <div class="divider"></div>
+    <div class="mini-stat">
+      <span class="ms-val">Real-time</span>
+      <span class="ms-label">Simulated Data</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// Build ticker tape
+const tickers = [
+  { sym:'AAPL', price:'182.63', chg:'+1.24', up:true },
+  { sym:'TSLA', price:'248.91', chg:'-3.12', up:false },
+  { sym:'NVDA', price:'512.44', chg:'+8.77', up:true },
+  { sym:'GOOGL',price:'139.20', chg:'+0.84', up:true },
+  { sym:'MSFT', price:'378.55', chg:'+2.10', up:true },
+  { sym:'AMZN', price:'185.30', chg:'-1.55', up:false },
+  { sym:'META', price:'308.12', chg:'+4.20', up:true },
+  { sym:'NFLX', price:'445.00', chg:'-0.90', up:false },
+  { sym:'AMD',  price:'168.74', chg:'+5.33', up:true },
+  { sym:'INTC', price:'38.21',  chg:'-0.44', up:false },
+  { sym:'PYPL', price:'62.85',  chg:'+0.66', up:true },
+  { sym:'SPY',  price:'455.10', chg:'+1.02', up:true },
+];
+
+// Duplicate for seamless loop
+const all = [...tickers, ...tickers];
+const tickerInner = document.getElementById('tickerInner');
+tickerInner.innerHTML = all.map(t => `
+  <span class="tick-item">
+    <span class="sym">${t.sym}</span>
+    <span>$${t.price}</span>
+    <span class="${t.up ? 'up' : 'dn'}">${t.chg}%</span>
+  </span>
+`).join('');
+
+// Animate prices slightly for realism
+setInterval(() => {
+  document.querySelectorAll('.tick-item').forEach((el, i) => {
+    const t = tickers[i % tickers.length];
+    const delta = (Math.random() - 0.5) * 0.3;
+    const newPrice = (parseFloat(t.price) + delta).toFixed(2);
+    const priceEl = el.querySelectorAll('span')[1];
+    if (priceEl) priceEl.textContent = `$${newPrice}`;
+  });
+}, 3000);
+</script>
+</body>
+</html>

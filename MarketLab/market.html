@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MarketLab – Quant Strategy Playground</title>
+
+  <!-- External libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- SIDE NAV -->
+<nav class="sidenav">
+  <div class="nav-logo">ML</div>
+  <div class="nav-item active" onclick="switchPage('dashboard')" data-page="dashboard">📊<span class="tooltip">Dashboard</span></div>
+  <div class="nav-item" onclick="switchPage('analytics')" data-page="analytics">📈<span class="tooltip">Analytics</span></div>
+  <div class="nav-item" onclick="switchPage('investor')" data-page="investor">👤<span class="tooltip">Investor</span></div>
+</nav>
+
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="page-date"  id="pageDate"></div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-stat">
+        <div class="lbl">Cash</div>
+        <div class="val white">$<span id="topCash">100,000.00</span></div>
+      </div>
+      <div class="topbar-stat">
+        <div class="lbl">Shares</div>
+        <div class="val white"><span id="topShares">0</span></div>
+      </div>
+      <div class="topbar-stat">
+        <div class="lbl">Net Worth</div>
+        <div class="val green">$<span id="topNet">100,000.00</span></div>
+      </div>
+      <div class="investor-chip" onclick="switchPage('investor')">
+        <div class="investor-avatar" id="headerAvatar">?</div>
+        <div>
+          <div class="investor-name" id="headerName">Investor</div>
+          <div class="investor-role" id="headerRole">Quant Trader</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="pages">
+
+    <!-- PAGE: DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div style="display:grid;grid-template-columns:1fr repeat(5,1fr);gap:14px;margin-bottom:14px;">
+
+        <!-- Hero card -->
+        <div class="hero-card">
+          <div class="hero-label">Available Balance</div>
+          <div class="hero-amount">$<span id="heroNet">100,000</span></div>
+          <div class="hero-sub">Total Portfolio Net Worth</div>
+          <div style="margin-top:14px;">
+            <div style="font-size:0.7rem;color:rgba(255,255,255,0.45);margin-bottom:4px;">Goal Progress</div>
+            <div class="prog-track"><div class="prog-fill" id="goalBar" style="width:10%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:rgba(255,255,255,0.35);">
+              <span id="goalPct">10%</span>
+              <span id="goalTarget">$200,000 goal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat minis -->
+        <div class="stat-mini" style="animation-delay:0.05s">
+          <div class="sm-icon blue">💵</div>
+          <div class="sm-lbl">Cash</div>
+          <div class="sm-val">$<span id="cashMini">100,000</span></div>
+          <div class="sm-chg up">Available</div>
+        </div>
+        <div class="stat-mini" style="animation-delay:0.1s">
+          <div class="sm-icon green">📈</div>
+          <div class="sm-lbl">Invested</div>
+          <div class="sm-val">$<span id="investedMini">0</span></div>
+          <div class="sm-chg up" id="investedChg">+0.00%</div>
+        </div>
+        <div class="stat-mini" style="animation-delay:0.15s">
+          <div class="sm-icon red">💹</div>
+          <div class="sm-lbl">Day P&amp;L</div>
+          <div class="sm-val" id="pnlMini" style="color:var(--green)">$0</div>
+          <div class="sm-chg up" id="pnlChg">Today</div>
+        </div>
+        <div class="stat-mini" style="animation-delay:0.2s">
+          <div class="sm-icon purp">🔢</div>
+          <div class="sm-lbl">Positions</div>
+          <div class="sm-val" id="posMini">0</div>
+          <div class="sm-chg up">Active</div>
+        </div>
+        <div class="stat-mini" style="animation-delay:0.25s">
+          <div class="sm-icon oran">⚡</div>
+          <div class="sm-lbl">Trades</div>
+          <div class="sm-val" id="tradesMini">0</div>
+          <div class="sm-chg up">Total</div>
+        </div>
+      </div>
+
+      <div class="grid-dash">
+        <!-- Left: stock list -->
+        <div class="col-stack">
+          <div class="sec-label">Live Markets</div>
+          <div id="market" class="col-stack" style="gap:8px"></div>
+        </div>
+
+        <!-- Centre: charts -->
+        <div class="col-stack">
+          <div class="card" style="animation-delay:0.1s">
+            <div class="card-head">
+              <span class="card-title" id="priceChartTitle">AAPL — Price</span>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <button class="zbtn" onclick="priceChart.resetZoom()">Reset</button>
+                <span class="badge live">● LIVE</span>
+              </div>
+            </div>
+            <canvas id="priceChart" height="100"></canvas>
+            <div class="chart-hint">🖱 Scroll to zoom · Drag to pan</div>
+          </div>
+          <div class="card" style="animation-delay:0.15s">
+            <div class="card-head">
+              <span class="card-title">Portfolio Net Worth</span>
+              <button class="zbtn" onclick="portfolioChart.resetZoom()">Reset</button>
+            </div>
+            <canvas id="portfolioChart" height="80"></canvas>
+            <div class="chart-hint">🖱 Scroll to zoom · Drag to pan</div>
+          </div>
+        </div>
+
+        <!-- Right: holdings + notifications -->
+        <div class="col-stack col-right">
+          <div class="card" style="animation-delay:0.2s;padding:16px 18px;">
+            <div class="card-head">
+              <span class="card-title">Holdings</span>
+              <span class="badge" id="holdCount">0</span>
+            </div>
+            <div id="holdingsList" class="col-stack" style="gap:7px;">
+              <div class="empty-state">No positions yet</div>
+            </div>
+          </div>
+          <div class="card" style="animation-delay:0.25s;padding:16px 18px;">
+            <div class="card-head"><span class="card-title">Notifications</span></div>
+            <div class="col-stack" style="gap:8px;" id="notifArea">
+              <div class="notif">
+                <div class="notif-icon">💡</div>
+                <div>Start trading to receive alerts.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: ANALYTICS -->
+    <div class="page" id="page-analytics">
+      <div class="sec-label">Risk Metrics</div>
+      <div class="grid-4" style="margin-bottom:16px;">
+        <div class="metric-box" style="animation-delay:0s">
+          <div class="m-lbl">Total Return</div>
+          <div class="m-val green" id="returnMetric">0.00%</div>
+          <div style="font-size:0.7rem;color:var(--sub);margin-top:4px;">Since inception</div>
+        </div>
+        <div class="metric-box" style="animation-delay:0.05s">
+          <div class="m-lbl">Sharpe Ratio</div>
+          <div class="m-val yellow" id="sharpeMetric">0.00</div>
+          <div style="font-size:0.7rem;color:var(--sub);margin-top:4px;">Risk-adjusted return</div>
+        </div>
+        <div class="metric-box" style="animation-delay:0.1s">
+          <div class="m-lbl">Max Drawdown</div>
+          <div class="m-val red" id="drawdownMetric">0.00%</div>
+          <div style="font-size:0.7rem;color:var(--sub);margin-top:4px;">Peak to trough</div>
+        </div>
+        <div class="metric-box" style="animation-delay:0.15s">
+          <div class="m-lbl">Volatility</div>
+          <div class="m-val blue" id="volMetric">0.0000</div>
+          <div style="font-size:0.7rem;color:var(--sub);margin-top:4px;">Annualised σ</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card" style="animation-delay:0.05s">
+          <div class="card-head">
+            <span class="card-title">Net Worth Over Time</span>
+            <button class="zbtn" onclick="analyticsPortChart.resetZoom()">Reset</button>
+          </div>
+          <canvas id="analyticsPortChart" height="130"></canvas>
+          <div class="chart-hint">🖱 Scroll to zoom · Drag to pan</div>
+        </div>
+        <div class="card" style="animation-delay:0.1s">
+          <div class="card-head"><span class="card-title">Portfolio Allocation</span></div>
+          <canvas id="allocationChart" height="130"></canvas>
+        </div>
+      </div>
+
+      <div class="sec-label">Stock Performance</div>
+      <div class="grid-5" id="perfCards"></div>
+    </div>
+
+    <!-- PAGE: INVESTOR -->
+    <div class="page" id="page-investor">
+      <div class="grid-2" style="align-items:start;">
+
+        <!-- Left: form -->
+        <div>
+          <div class="sec-label">Investor Profile</div>
+          <div class="investor-form">
+            <div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:4px;">Personal Details</div>
+            <div style="font-size:0.78rem;color:var(--sub);">Enter your information to personalise your dashboard.</div>
+            <div class="form-grid">
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Full Name</label>
+                <input type="text" id="invName" placeholder="e.g. Simon K. Jimmy"/>
+              </div>
+              <div class="form-group">
+                <label>Investor ID</label>
+                <input type="text" id="invId" placeholder="e.g. INV-00421"/>
+              </div>
+              <div class="form-group">
+                <label>Tax ID / PAN</label>
+                <input type="text" id="invTax" placeholder="e.g. ABCDE1234F"/>
+              </div>
+              <div class="form-group">
+                <label>Risk Profile</label>
+                <input type="text" id="invRisk" placeholder="e.g. Aggressive"/>
+              </div>
+              <div class="form-group">
+                <label>Role / Title</label>
+                <input type="text" id="invRole" placeholder="e.g. Quant Trader"/>
+              </div>
+              <div class="form-group">
+                <label>Target Return (%)</label>
+                <input type="number" id="invTarget" placeholder="e.g. 15"/>
+              </div>
+              <div class="form-group">
+                <label>Investment Goal ($)</label>
+                <input type="number" id="invGoal" placeholder="e.g. 200000"/>
+              </div>
+            </div>
+            <button class="btn-save" onclick="saveInvestor()">💾 Save Profile</button>
+          </div>
+        </div>
+
+        <!-- Right: summary -->
+        <div>
+          <div class="sec-label">Portfolio Summary</div>
+          <div class="portfolio-summary">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+              <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff;" id="invAvatar">?</div>
+              <div>
+                <div style="font-size:1rem;font-weight:700;color:var(--text);" id="invDisplayName">—</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;" id="invBadges">
+                  <span class="inv-badge">📋 No ID set</span>
+                </div>
+              </div>
+            </div>
+            <div class="inv-stat-row"><span class="inv-stat-lbl">Net Worth</span><span class="inv-stat-val">$<span id="invNetWorth">100,000.00</span></span></div>
+            <div class="inv-stat-row"><span class="inv-stat-lbl">Total Invested</span><span class="inv-stat-val">$<span id="invInvested">0.00</span></span></div>
+            <div class="inv-stat-row"><span class="inv-stat-lbl">Cash Balance</span><span class="inv-stat-val">$<span id="invCash">100,000.00</span></span></div>
+            <div class="inv-stat-row"><span class="inv-stat-lbl">Unrealised P&amp;L</span><span class="inv-stat-val" id="invPnl" style="color:var(--green)">$0.00</span></div>
+            <div class="inv-stat-row"><span class="inv-stat-lbl">Total Return</span><span class="inv-stat-val" id="invReturn" style="color:var(--green)">0.00%</span></div>
+            <div class="inv-stat-row"><span class="inv-stat-lbl">Active Positions</span><span class="inv-stat-val" id="invPositions">0</span></div>
+            <div class="inv-stat-row"><span class="inv-stat-lbl">Total Trades</span><span class="inv-stat-val" id="invTrades">0</span></div>
+            <div class="inv-stat-row"><span class="inv-stat-lbl">Risk Profile</span><span class="inv-stat-val" id="invRiskDisp">—</span></div>
+            <div class="inv-stat-row"><span class="inv-stat-lbl">Goal Progress</span><span class="inv-stat-val" id="invGoalPct">—</span></div>
+            <div style="margin-top:16px;">
+              <div style="font-size:0.68rem;color:var(--sub);margin-bottom:6px;">Goal Progress</div>
+              <div class="prog-track"><div class="prog-fill" id="invGoalBar" style="width:0%"></div></div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;" class="portfolio-summary">
+            <div style="font-size:0.8rem;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Position Breakdown</div>
+            <div id="invHoldingsList" class="col-stack" style="gap:6px;">
+              <div class="empty-state">No positions yet</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- .pages -->
+</div><!-- .shell -->
+
+<div id="toast"></div>
+
+<!-- App logic -->
+<script src="script.js"></script>
+
+</body>
+</html>
